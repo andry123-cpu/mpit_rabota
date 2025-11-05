@@ -128,6 +128,8 @@ class UsersModel(Base):
     name: Mapped[str] = mapped_column(String(20))
     password: Mapped[str] = mapped_column(String(255))
     role_id: Mapped[int] = mapped_column(
-        ForeignKey("user_roles.id", ondelete="CASCADE")
+        ForeignKey("user_roles.id", ondelete="CASCADE"), 
+        nullable=True
     )
+    is_superuser: Mapped[bool] = mapped_column(default=False)
     
