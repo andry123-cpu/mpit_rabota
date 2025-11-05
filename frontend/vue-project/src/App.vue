@@ -84,19 +84,7 @@ app.listen(PORT, () => {
 </script>
 
 <template>
- <!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Оптимед — медицинская клиника</title>
-  <meta name="description" content="Клиника «Оптимед» в Астрахани: запись на приём, лучшие врачи, популярные услуги." />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-</head>
-<body>
-
+  <dev>
   <header>
     <div class="container topbar" aria-label="Верхняя панель">
       
@@ -149,7 +137,7 @@ app.listen(PORT, () => {
     </div>
   </header>
 
-  <main class="container">
+  <dev class="container">
     <!-- Информация -->
     <section id="about" class="about" aria-labelledby="aboutTitle">
       <h2 id="aboutTitle">Современная клиника полного цикла</h2>
@@ -199,7 +187,7 @@ app.listen(PORT, () => {
       </div>
       <p class="muted" id="nothingFound" style="display:none">Ничего не найдено. Попробуйте изменить запрос.</p>
     </section>
-  </main>
+  </dev>
 
   <footer id="contacts">
     <div class="container">
@@ -229,7 +217,7 @@ app.listen(PORT, () => {
     </form>
   </dialog>
 
-  <script>
+  <!-- <script>
     const kebabBtn=document.getElementById('kebabBtn');
     const kebabMenu=document.getElementById('kebabMenu');
     kebabBtn.addEventListener('click',()=>{const open=kebabMenu.classList.toggle('open');kebabBtn.setAttribute('aria-expanded',String(open));});
@@ -253,10 +241,8 @@ app.listen(PORT, () => {
     }
     input.addEventListener('input',filter);
     clearBtn.addEventListener('click',()=>{input.value='';filter();});
-  </script>
-</body>
-</html>
-
+  </script> -->
+  </dev>
 </template>
 
 <style scoped>
