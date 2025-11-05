@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Оптимед — панель врача</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --burgundy:#7a1732; --burgundy-700:#5f1227; --bg:#f5f6f8; --card:#fff;
+    --text:#0f172a; --muted:#64748b; --border:#e5e7eb; --radius:16px;
+    --shadow:0 10px 30px rgba(0,0,0,.06); --container:1200px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:linear-gradient(#fbfbfc,var(--bg))}
+  .topline{width:100%;height:6px;background:var(--burgundy);box-shadow:0 4px 16px rgba(122,23,50,.35) inset}
+  .wrap{max-width:var(--container);margin:22px auto;padding:0 18px}
+  .shell{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);display:grid;grid-template-columns:260px 1fr;overflow:hidden}
+  .sidebar{background:linear-gradient(#fbfbfc,#f0f2f5);border-right:1px solid var(--border);padding:24px 16px;display:flex;flex-direction:column;gap:18px}
+  .logo{font-weight:800;letter-spacing:.4px;font-size:26px;color:var(--burgundy)}
+  .nav{display:grid;gap:8px}
+  .nav a{display:block;text-decoration:none;color:#111827;padding:12px 14px;border-radius:12px;border:1px solid transparent}
+  .nav a.active{background:#eef0f4;border-color:#e8ebf0;font-weight:600}
+  .nav a:hover{background:#f4f6f8}
+  .content{padding:28px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center}
+  .title{font-size:34px;font-weight:700;margin:0}
+  .subtitle{color:var(--muted);margin-top:6px}
+  .menu-btn{border:1px solid var(--border);background:#fff;padding:10px 12px;border-radius:10px;cursor:pointer}
+  .grid{display:grid;grid-template-columns:1.4fr .9fr;gap:18px;margin-top:22px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+  .card h3{margin:0 0 12px 0;font-size:20px}
+  .list{display:grid;gap:14px}
+  .row{display:flex;gap:14px;align-items:flex-start}
+  .time{font-weight:700;min-width:56px}
+  .who{font-weight:600}
+  .desc{color:var(--muted);margin-top:2px}
+  .calendar{display:grid;gap:12px}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;color:var(--muted)}
+  .cal{width:100%;border-collapse:separate;border-spacing:6px;text-align:center;color:#111827}
+  .cal th{font-size:12px;color:var(--muted);font-weight:600}
+  .cal td{padding:8px 0;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;user-select:none}
+  .cal td.dim{color:#c0c6cf}
+  .cal .today{background:var(--burgundy);color:#fff;border-color:var(--burgundy)}
+  .cal .selected{outline:2px solid var(--burgundy);outline-offset:2px}
+  .muted{color:var(--muted)}
+  .day-nav{display:flex;align-items:center;gap:8px}
+  .pill{border:1px solid var(--border);padding:6px 10px;border-radius:10px;background:#fff;cursor:pointer}
+  @media (max-width:960px){.shell{grid-template-columns:1fr}.sidebar{display:none}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topline"></div>
+
+<div class="wrap">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="logo">ОПТИМЕД</div>
+      <nav class="nav">
+        <a class="active" href="#">Главная</a>
+        <a href="#">Пациенты</a>
+        <a href="#">Расписание</a>
+        <a href="#">Отчётность</a>
+      </nav>
+    </aside>
+
+    <section class="content">
+      <div class="toolbar">
+        <div>
+          <h1 class="title">Добро пожаловать, доктор Иванов!</h1>
+          <div class="subtitle" id="todayText"></div>
+        </div>
+        <button class="menu-btn" aria-label="Меню">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+
+      <div class="grid">
+        <!-- расписание -->
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <h3 id="schedTitle" style="margin:0">Расписание на сегодня</h3>
+            <div class="day-nav">
+              <button id="prevDay" class="pill" title="Предыдущий день">‹</button>
+              <button id="nextDay" class="pill" title="Следующий день">›</button>
+            </div>
+          </div>
+          <div id="scheduleList" class="list"></div>
+        </div>
+
+        <!-- календарь -->
+        <div class="card calendar">
+          <h3>Уведомления</h3>
+          <div class="cal-head">
+            <button class="menu-btn" id="prevM" aria-label="Предыдущий месяц">‹</button>
+            <strong id="monthTitle">месяц</strong>
+            <button class="menu-btn" id="nextM" aria-label="Следующий месяц">›</button>
+          </div>
+          <table class="cal" aria-label="Календарь">
+            <thead><tr><th>пн</th><th>вт</th><th>ср</th><th>чт</th><th>пт</th><th>сб</th><th>вс</th></tr></thead>
+            <tbody id="calBody"></tbody>
+          </table>
+          <div class="muted">Кликните по дате, чтобы увидеть расписание.</div>
+        </div>
+
+        <div class="card" style="grid-column:1 / span 1;">
+          <h3>Уведомления</h3>
+          <p class="muted">Завтра в&nbsp;12:00 у&nbsp;вас приём с&nbsp;пациентом: Анна Антонова.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  // русские месяцы/дни
+  const MONTHS = ['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
+  const WEEKDAYS = ['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+
+  // текущее и выбранное
+  const today = new Date();
+  let selected = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  let view = new Date(selected.getFullYear(), selected.getMonth(), 1);
+
+  // подпись под приветствием
+  document.getElementById('todayText').textContent =
+    Сегодня, ${today.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})};
+
+  // демо-генератор расписания (подставьте реальные данные из API позже)
+  function getScheduleFor(date){
+    const d = date.getDate();
+    const items = [];
+    // немного варьируем число приёмов
+    const count = (d % 3) + 2; // 2..4
+    const names = [
+      'Сергей Сергеев','Пётр Петров','Алексей Алексеев','Антон Антонов','Мария Иванова','Ольга Смирнова'
+    ];
+    for(let i=0;i<count;i++){
+      items.push({
+        time: (9+i)+':00',
+        who: names[(d+i)%names.length],
+        desc: i===0 ? 'Первичный приём' : (i%2 ? 'Повторный приём' : 'Онлайн-консультация')
+      });
+    }
+    return items;
+  }
+
+  // рендер расписания
+  function renderSchedule(){
+    const list = document.getElementById('scheduleList');
+    list.innerHTML = '';
+    const items = getScheduleFor(selected);
+    items.forEach(it=>{
+      const row = document.createElement('div');
+      row.className='row';
+      row.innerHTML = `<div class="time">${it.time}</div>
+        <div><div class="who">${it.who}</div><div class="desc">${it.desc}</div></div>`;
+      list.appendChild(row);
+    });
+    const sameDay = selected.toDateString() === today.toDateString();
+    const title = sameDay ? 'Расписание на сегодня' :
+      Расписание: ${WEEKDAYS[selected.getDay()]}, ${selected.toLocaleDateString('ru-RU',{day:'numeric',month:'long'})};
+    document.getElementById('schedTitle').textContent = title;
+  }
+
+  // календарь
+  function renderCalendar(){
+    const tbody = document.getElementById('calBody');
+    tbody.innerHTML = '';
+    const year = view.getFullYear(), month = view.getMonth();
+    document.getElementById('monthTitle').textContent = MONTHS[month];
+
+    const first = new Date(year, month, 1);
+    const start = new Date(first);
+    const shift = (first.getDay()+6)%7; // пн=0
+    start.setDate(start.getDate()-shift);
+
+    for(let r=0;r<6;r++){
+      const tr=document.createElement('tr');
+      for(let c=0;c<7;c++){
+        const td=document.createElement('td');
+        td.textContent=start.getDate();
+        if(start.getMonth()!==month) td.classList.add('dim');
+        if(start.toDateString()===today.toDateString()) td.classList.add('today');
+        if(start.toDateString()===selected.toDateString()) td.classList.add('selected');
+        // выбор дня
+        td.onclick=()=>{
+          selected = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+          view = new Date(selected.getFullYear(), selected.getMonth(), 1);
+          renderCalendar(); renderSchedule();
+        };
+        tr.appendChild(td);
+        start.setDate(start.getDate()+1);
+      }
+      tbody.appendChild(tr);
+    }
+  }
+
+  // стрелки месяца
+  document.getElementById('prevM').onclick = ()=>{ view.setMonth(view.getMonth()-1); renderCalendar(); };
+  document.getElementById('nextM').onclick = ()=>{ view.setMonth(view.getMonth()+1); renderCalendar(); };
+
+  // стрелки дня
+  document.getElementById('prevDay').onclick = ()=>{
+    selected.setDate(selected.getDate()-1);
+    view = new Date(selected.getFullYear(), selected.getMonth(), 1);
+    renderCalendar(); renderSchedule();
+  };
+  document.getElementById('nextDay').onclick = ()=>{
+    selected.setDate(selected.getDate()+1);
+    view = new Date(selected.getFullYear(), selected.getMonth(), 1);
+    renderCalendar(); renderSchedule();
+  };
+
+  // первый рендер
+  renderCalendar(); renderSchedule();
+</script>
+</body>
+</html>

@@ -1,85 +1,62 @@
 <script setup>
 
-// server.js
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
+import { ref, computed } from 'vue'
 
-const app = express();
-const PORT = 3000;
+const CRITICAL_SYMPTOMS = [
+  'грудная боль', 'потеря сознания', 'одышка', 'инфаркт', 'инсульт',
+  'сильное кровотечение', 'судороги'
+]
+const HIGH_URGENCY_SYMPTOMS = [
+  'температура выше 39', 'высокая температура', 'сильная боль',
+  'кровотечение', 'рвота с кровью', 'диарея с кровью', "боль в груди", "потеря сознания", "затруднённое дыхание",  "высокая температура",  "Острая боль", "лихорадка", "Боль при мочеиспускании", "Кровавая рвота"  ]
 
-// Мидлвары
-app.use(cors());
-app.use(bodyParser.json());
+const MILD_SYMPTOMS = [
+  'першение', 'легкая усталость', 'головная боль', 'насморк', 'кашель', "повышенная температура", "усталость", "боль в горле", "боль в животе", "Мышечная слабость", "Боль в спине", "Отеки", "Рвота"
+]
 
-// Вспомогательная функция анализа обращения
-function analyzeRequest({ age, symptoms = "", location = "", chronicDiseases = [] }) {
-  const normalizedSymptoms = symptoms.toLowerCase();
-
-  // Ключевые слова для быстрой проверки
-  const severeSymptoms = ["боль в груди", "потеря сознания", "затруднённое дыхание", "высокая температура", "сильная боль", "Острая боль", "лихорадка", "Боль при мочеиспускании", "Кровавая рвота" ];
-  const moderateSymptoms = ["кашель", "повышенная температура", "усталость", "боль в горле", "боль в животе", "Мышечная слабость", "Боль в спине", "Отеки", "Рвота"];
-
-  let priority = "низкий";
-  let format = "телемедицина";
-  let score = 0;
-
-  // --- Алгоритм анализа ---
-
-  // Симптомы
-  if (severeSymptoms.some(s => normalizedSymptoms.includes(s))) score += 3;
-  else if (moderateSymptoms.some(s => normalizedSymptoms.includes(s))) score += 1;
-
-  // Возраст
-  if (age > 65) score += 2;
-  else if (age < 5) score += 2;
-
-  // Хронические заболевания
-  if (chronicDiseases.length > 0) score += 1;
-
-  // --- Определяем приоритет и формат ---
-  if (score >= 4) {
-    priority = "высокий";
-    format = "выезд врача";
-  } else if (score >= 2) {
-    priority = "средний";
-    format = "очный приём";
-  }
-
-  return { priority, recommendedFormat: format, score };
+// Нормализация введенных данных
+const normalizeSymptoms = (input) => {
+  return input.toLowerCase().split(',').map(s => s.trim())
 }
 
-// Главный маршрут
-app.post("/api/requests", (req, res) => {
-  try {
-    const { age, symptoms, location, chronicDiseases } = req.body;
+const analyze = () => {
+  const age = patient.value.age
+  const symptoms = normalizeSymptoms(patient.value.symptoms)
+  const hasChronic = patient.value.hasChronicDiseases
 
-    if (!age || !symptoms) {
-      return res.status(400).json({ error: "Необходимо указать возраст и симптомы" });
+  let urgency = 'низкая'
+  let format = 'телемедицина'
+
+  // Проверка крит срочности
+  const hasCriticalSymptom = symptoms.some(s => CRITICAL_SYMPTOMS.some(cs => s.includes(cs)))
+  const isHighRiskElderly = (age >= 70) || (hasChronic && age >= 60)
+
+  if (hasCriticalSymptom || isHighRiskElderly) {
+    urgency = 'критическая'
+    format = 'выезд врача'
+  } else {
+    const hasHighUrgencySymptom = symptoms.some(s => HIGH_URGENCY_SYMPTOMS.some(hs => s.includes(hs)))
+
+    if (age >= 60 || hasHighUrgencySymptom) {
+      urgency = 'высокая'
+      format = 'очный приём'
+    } else if (symptoms.some(s => MILD_SYMPTOMS.some(ms => s.includes(ms)))) {
+      urgency = 'средняя'
+      format = 'телемедицина или очно' // можно уточнить по локации
+    } else {
+      // Неизвестные симптомы — средняя по умолчанию
+      urgency = 'средняя'
+      format = 'очный приём'
     }
-
-    const result = analyzeRequest({ age, symptoms, location, chronicDiseases });
-
-    res.json({
-      success: true,
-      message: "Обращение проанализировано",
-      data: result,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Ошибка сервера" });
   }
-});
 
-// Тестовый маршрут
-app.get("/", (req, res) => {
-  res.send("Сервер медицинской платформы работает ✅");
-});
+  // Уточнение: если пациент старше 75 — приоритет на выезд даже при средней срочности
+  if (age >= 75 && urgency !== 'критическая') {
+    format = 'выезд врача (по возрасту)'
+  }
 
-// Запуск сервера
-app.listen(PORT, () => {
-  console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
-});
+  result.value = { urgency, format }
+}
 
     const kebabBtn=document.getElementById('kebabBtn');
     const kebabMenu=document.getElementById('kebabMenu');
