@@ -91,10 +91,10 @@ const analyze = () => {
       
       <a class="brand" href="#" aria-label="На главную">
         <!-- Замените src на свой файл логотипа (из вашего примера «ОПТИМЕД») -->
-        <img src="images\Logo.png" alt="Оптимед — логотип" class="logo-img">
+        <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="logo-img">
         <!-- Иконка врача (PNG из вашего примера); перекрашена в бордовый через CSS -->
         <span class="doc-wrap" aria-hidden="true">
-          <img src="images\doctor.jpg" alt="doctor">
+          <img src="@\assets\images\doctor.jpg" alt="doctor">
         </span>
         <h1>Клиника «Оптимед»</h1>
       </a>
