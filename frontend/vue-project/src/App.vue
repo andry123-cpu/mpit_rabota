@@ -93,7 +93,7 @@ app.listen(PORT, () => {
   <meta name="description" content="Клиника «Оптимед» в Астрахани: запись на приём, лучшие врачи, популярные услуги." />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="main.css" rel="stylesheet">
+
 </head>
 <body>
 
@@ -257,4 +257,75 @@ app.listen(PORT, () => {
 </body>
 </html>
 
-</template>;
+</template>
+
+<style scoped>
+
+    :root{
+      --burgundy:#7a1732;
+      --burgundy-700:#5f1227;
+      --gray-50:#f6f7f8; --gray-200:#e5e7eb; --gray-500:#6b7280; --gray-800:#1f2937;
+      --white:#ffffff; --radius:14px; --shadow:0 8px 24px rgba(0,0,0,.08); --container:1180px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--gray-800);
+      background:linear-gradient(0deg,var(--gray-50),#ffffff);}
+    .container{max-width:var(--container);margin:0 auto;padding:0 20px}
+
+    
+    header{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);box-shadow:0 2px 10px rgba(0,0,0,.04)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+    .brand h1{font-size:18px;line-height:1.1;margin:0}
+
+    /* логотип + врач */
+    .logo-img{height:44px;width:auto;display:block}
+    .doc-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;position:relative;box-shadow:var(--shadow)}
+    /* Перекрашиваем зелёный в бордовый: подберите при необходимости значения hue-rotate/saturate */
+    .doc-wrap img{width:100%;height:100%;object-fit:cover;filter:hue-rotate(315deg) saturate(130%);}
+
+    .kebab{border:1px solid var(--gray-200);background:var(--white);border-radius:12px;padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .kebab:hover{background:#fafafa}
+    .kebab-menu{position:absolute;right:20px;top:68px;background:var(--white);border:1px solid var(--gray-200);border-radius:12px;box-shadow:var(--shadow);padding:6px;width:220px;display:none}
+    .kebab-menu.open{display:block}
+    .kebab-menu a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;color:inherit;text-decoration:none}
+    .kebab-menu a:hover{background:#f3f4f6}
+
+    /* ====== CTA ====== */
+    .cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .btn{border:0;border-radius:999px;padding:12px 18px;cursor:pointer;font-weight:600;letter-spacing:.2px}
+    .btn-primary{background:var(--burgundy);color:var(--white);box-shadow:0 6px 18px rgba(122,23,50,.25)}
+    .btn-primary:hover{background:var(--burgundy-700)}
+    .phone{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--burgundy);text-decoration:none;white-space:nowrap}
+
+    /* ====== Поиск ====== */
+    .search-wrap{padding:22px 0 8px}
+    .search{display:flex;gap:12px;align-items:center;background:var(--white);border:1px solid var(--gray-200);border-radius:999px;padding:10px 14px;box-shadow:var(--shadow)}
+    .search input{border:0;outline:0;flex:1;font-size:16px;background:transparent}
+    .search button{border:0;border-radius:999px;padding:10px 14px;cursor:pointer;background:#f3f4f6}
+    .search button:hover{background:#ebecef}
+
+    
+    .about{margin-top:22px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);display:grid;gap:10px}
+    .about h2{margin:0 0 6px 0}
+    .badges{display:flex;gap:10px;flex-wrap:wrap}
+    .badge{background:#f3f4f6;border-radius:999px;padding:6px 10px;font-size:13px}
+
+    .services{margin:26px 0 60px}
+    .services h3{margin:0 0 14px 0}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
+    .card{grid-column:span 4;background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+    .card h4{margin:0}
+    .card p{margin:0;color:var(--gray-500)}
+    .card .price{margin-top:auto;font-weight:700}
+    .card .action{margin-top:8px;align-self:flex-start;background:var(--burgundy);color:#fff;border:0;border-radius:10px;padding:10px 12px;cursor:pointer}
+    .action:hover{background:var(--burgundy-700)}
+    .muted{color:var(--gray-500)}
+
+    footer{border-top:1px solid var(--gray-200);background:var(--white);color:var(--gray-500);padding:28px 0;font-size:14px}
+
+    @media (max-width:960px){.card{grid-column:span 6}}
+    @media (max-width:640px){.brand h1{display:none}.search-wrap{padding-top:10px}.card{grid-column:span 12}.kebab-menu{right:12px}}
+  
+</style>
