@@ -489,18 +489,37 @@ const submitBookingForm = async () => {
     <dialog id="bookModal" ref="bookModal" style="border:0;border-radius:16px;padding:0;max-width:520px;width:92%">
       <form method="dialog" style="padding:22px 20px" @submit.prevent="submitBookingForm">
         <h3 style="margin:0 0 8px 0;color:var(--burgundy)">Запись на приём</h3>
-        <p class="muted" style="margin-top:0">Оставьте контакты, и администратор свяжется с вами.</p>
+        <p class="muted" style="margin-top:0">Заполните данные для первичной оценки срочности.</p>
         <div style="display:grid;gap:10px">
           <input required v-model="bookingData.name" placeholder="Ваше имя" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
           <input required v-model="bookingData.phone" placeholder="Телефон" pattern="\\+?[0-9\\s\\-()]{6,}" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
           <select v-model="bookingData.service" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+            <option value="">Выберите специалиста</option>
             <option>Терапевт</option><option>Педиатр</option><option>УЗИ</option>
             <option>Стоматология</option><option>Анализы</option><option>Кардиолог</option>
           </select>
+
+          <!-- НОВЫЕ ПОЛЯ -->
+          <input type="number" min="0" max="130" v-model.number="bookingData.age" placeholder="Возраст (полных лет)" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+          <input v-model="bookingData.location" placeholder="Локация (город, район)" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+          <textarea v-model="bookingData.symptoms" placeholder="Симптомы (через запятую: кашель, температура и т.д.)" rows="3" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px;resize:vertical"></textarea>
+          <label style="display:flex;align-items:center;gap:8px;font-size:14px">
+            <input type="checkbox" v-model="bookingData.hasChronicDiseases" style="width:auto;height:auto">
+            Есть хронические заболевания
+          </label>
         </div>
+
+        <!-- Отображение результата анализа -->
+        <div v-if="analysisResult" :class="`urgency-${analysisResult.urgency.toLowerCase()}`" style="margin-top:12px;padding:10px;border-radius:8px;background:#f8f9fa;color:#000">
+          <strong>Уровень срочности:</strong> {{ analysisResult.urgency }}<br>
+          <strong>Рекомендуемый формат:</strong> {{ analysisResult.format }}
+        </div>
+
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
           <button class="btn" @click="closeModal" value="cancel">Отмена</button>
-          <button class="btn btn-primary" type="submit" value="ok">Отправить</button>
+          <button class="btn btn-primary" type="submit" :disabled="isSubmitting" value="ok">
+            {{ isSubmitting ? 'Отправка...' : 'Отправить' }}
+          </button>
         </div>
       </form>
     </dialog>
@@ -883,5 +902,32 @@ footer{border-top:1px solid var(--gray-200);background:var(--white);color:var(--
   .brand h1{font-size:1.3rem}
   .search button{padding:6px 10px;}
   .btn{padding:8px 14px; font-size:14px;}
+}
+#bookModal {
+  margin: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Для лучшего отображения на мобильных */
+@media (max-width: 480px) {
+  #bookModal {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 10px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Фон затемнения для модального окна */
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
 }
 </style>
