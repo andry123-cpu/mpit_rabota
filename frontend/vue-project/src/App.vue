@@ -1,39 +1,86 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
+// server.js
 import express from "express";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 const app = express();
+const PORT = 3000;
+
+// Мидлвары
+app.use(cors());
 app.use(bodyParser.json());
 
-app.post("/api/requests", (req, res) => {
-  const { age, symptoms, location, chronicDiseases } = req.body;
+// Вспомогательная функция анализа обращения
+function analyzeRequest({ age, symptoms = "", location = "", chronicDiseases = [] }) {
+  const normalizedSymptoms = symptoms.toLowerCase();
 
-  // лог анализа
+  // Ключевые слова для быстрой проверки
+  const severeSymptoms = ["боль в груди", "потеря сознания", "затруднённое дыхание", "высокая температура", "сильная боль"];
+  const moderateSymptoms = ["кашель", "повышенная температура", "усталость", "боль в горле"];
+
   let priority = "низкий";
   let format = "телемедицина";
+  let score = 0;
 
-  const severeSymptoms = ["боль в груди", "потеря сознания", "затруднённое дыхание"];
-  const homeVisitNeeded = ["пожилой", "ограниченная подвижность"];
+  // --- Алгоритм анализа ---
 
-  // приоритет
-  if (severeSymptoms.some(s => symptoms.toLowerCase().includes(s))) {
+  // Симптомы
+  if (severeSymptoms.some(s => normalizedSymptoms.includes(s))) score += 3;
+  else if (moderateSymptoms.some(s => normalizedSymptoms.includes(s))) score += 1;
+
+  // Возраст
+  if (age > 65) score += 2;
+  else if (age < 5) score += 2;
+
+  // Хронические заболевания
+  if (chronicDiseases.length > 0) score += 1;
+
+  // --- Определяем приоритет и формат ---
+  if (score >= 4) {
     priority = "высокий";
     format = "выезд врача";
-  } else if (age > 65 || chronicDiseases?.length > 0) {
+  } else if (score >= 2) {
     priority = "средний";
     format = "очный приём";
   }
 
-  res.json({
-    priority,
-    recommendedFormat: format,
-    message: `Обращение проанализировано: ${format}, приоритет — ${priority}.`
-  });
+  return { priority, recommendedFormat: format, score };
+}
+
+// Главный маршрут
+app.post("/api/requests", (req, res) => {
+  try {
+    const { age, symptoms, location, chronicDiseases } = req.body;
+
+    if (!age || !symptoms) {
+      return res.status(400).json({ error: "Необходимо указать возраст и симптомы" });
+    }
+
+    const result = analyzeRequest({ age, symptoms, location, chronicDiseases });
+
+    res.json({
+      success: true,
+      message: "Обращение проанализировано",
+      data: result,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
 });
 
-app.listen(3000, () => console.log("✅ Сервер запущен на http://localhost:3000"));
+// Тестовый маршрут
+app.get("/", (req, res) => {
+  res.send("Сервер медицинской платформы работает ✅");
+});
+
+// Запуск сервера
+app.listen(PORT, () => {
+  console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
+});
 
 </script>
 
