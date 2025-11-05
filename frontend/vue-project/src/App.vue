@@ -81,6 +81,30 @@ app.listen(PORT, () => {
   console.log(`✅ Сервер запущен на http://localhost:${PORT}`);
 });
 
+    const kebabBtn=document.getElementById('kebabBtn');
+    const kebabMenu=document.getElementById('kebabMenu');
+    kebabBtn.addEventListener('click',()=>{const open=kebabMenu.classList.toggle('open');kebabBtn.setAttribute('aria-expanded',String(open));});
+    document.addEventListener('click',(e)=>{if(!kebabMenu.contains(e.target)&&!kebabBtn.contains(e.target)){kebabMenu.classList.remove('open');kebabBtn.setAttribute('aria-expanded','false');}});
+
+    const dlg=document.getElementById('bookModal');
+    document.getElementById('openBook').addEventListener('click',()=>dlg.showModal());
+    dlg.addEventListener('close',()=>{if(dlg.returnValue==='ok') alert('Спасибо! Мы свяжемся с вами в ближайшее время.');});
+
+    document.querySelectorAll('.action').forEach(btn=>btn.addEventListener('click',()=>dlg.showModal()));
+
+    const input=document.getElementById('searchInput'); const clearBtn=document.getElementById('clearSearch');
+    const grid=document.getElementById('servicesGrid'); const empty=document.getElementById('nothingFound');
+    function filter(){
+      const q=input.value.trim().toLowerCase(); let visible=0;
+      grid.querySelectorAll('.card').forEach(card=>{
+        const t=(card.dataset.title||card.textContent).toLowerCase(); const show=!q||t.includes(q);
+        card.style.display=show?'':'none'; if(show) visible++;
+      });
+      empty.style.display=visible?'none':'';
+    }
+    input.addEventListener('input',filter);
+    clearBtn.addEventListener('click',()=>{input.value='';filter();});
+
 </script>
 
 <template>
@@ -243,6 +267,7 @@ app.listen(PORT, () => {
     clearBtn.addEventListener('click',()=>{input.value='';filter();});
   </script> -->
   </dev>
+
 </template>
 
 <style scoped>
@@ -314,4 +339,4 @@ app.listen(PORT, () => {
     @media (max-width:960px){.card{grid-column:span 6}}
     @media (max-width:640px){.brand h1{display:none}.search-wrap{padding-top:10px}.card{grid-column:span 12}.kebab-menu{right:12px}}
   
-</style>
+</style>;
