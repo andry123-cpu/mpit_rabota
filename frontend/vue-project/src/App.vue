@@ -1,63 +1,4 @@
-<script setup>
-
-import { ref, computed } from 'vue'
-
-const CRITICAL_SYMPTOMS = [
-  'грудная боль', 'потеря сознания', 'одышка', 'инфаркт', 'инсульт',
-  'сильное кровотечение', 'судороги'
-]
-const HIGH_URGENCY_SYMPTOMS = [
-  'температура выше 39', 'высокая температура', 'сильная боль',
-  'кровотечение', 'рвота с кровью', 'диарея с кровью', "боль в груди", "потеря сознания", "затруднённое дыхание",  "высокая температура",  "Острая боль", "лихорадка", "Боль при мочеиспускании", "Кровавая рвота"  ]
-
-const MILD_SYMPTOMS = [
-  'першение', 'легкая усталость', 'головная боль', 'насморк', 'кашель', "повышенная температура", "усталость", "боль в горле", "боль в животе", "Мышечная слабость", "Боль в спине", "Отеки", "Рвота"
-]
-
-// Нормализация введенных данных
-const normalizeSymptoms = (input) => {
-  return input.toLowerCase().split(',').map(s => s.trim())
-}
-
-const analyze = () => {
-  const age = patient.value.age
-  const symptoms = normalizeSymptoms(patient.value.symptoms)
-  const hasChronic = patient.value.hasChronicDiseases
-
-  let urgency = 'низкая'
-  let format = 'телемедицина'
-
-  // Проверка крит срочности
-  const hasCriticalSymptom = symptoms.some(s => CRITICAL_SYMPTOMS.some(cs => s.includes(cs)))
-  const isHighRiskElderly = (age >= 70) || (hasChronic && age >= 60)
-
-  if (hasCriticalSymptom || isHighRiskElderly) {
-    urgency = 'критическая'
-    format = 'выезд врача'
-  } else {
-    const hasHighUrgencySymptom = symptoms.some(s => HIGH_URGENCY_SYMPTOMS.some(hs => s.includes(hs)))
-
-    if (age >= 60 || hasHighUrgencySymptom) {
-      urgency = 'высокая'
-      format = 'очный приём'
-    } else if (symptoms.some(s => MILD_SYMPTOMS.some(ms => s.includes(ms)))) {
-      urgency = 'средняя'
-      format = 'телемедицина или очно' // можно уточнить по локации
-    } else {
-      // Неизвестные симптомы — средняя по умолчанию
-      urgency = 'средняя'
-      format = 'очный приём'
-    }
-  }
-
-  // Уточнение: если пациент старше 75 — приоритет на выезд даже при средней срочности
-  if (age >= 75 && urgency !== 'критическая') {
-    format = 'выезд врача (по возрасту)'
-  }
-
-  result.value = { urgency, format }
-}
-
+<!--  <script setup> 
     const kebabBtn=document.getElementById('kebabBtn');
     const kebabMenu=document.getElementById('kebabMenu');
     kebabBtn.addEventListener('click',()=>{const open=kebabMenu.classList.toggle('open');kebabBtn.setAttribute('aria-expanded',String(open));});
@@ -81,20 +22,16 @@ const analyze = () => {
     }
     input.addEventListener('input',filter);
     clearBtn.addEventListener('click',()=>{input.value='';filter();});
-
-</script>
+</script> -->
 
 <template>
-  <dev>
+  <div>
   <header>
     <div class="container topbar" aria-label="Верхняя панель">
-      
       <a class="brand" href="#" aria-label="На главную">
-        <!-- Замените src на свой файл логотипа (из вашего примера «ОПТИМЕД») -->
-        <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="logo-img">
-        <!-- Иконка врача (PNG из вашего примера); перекрашена в бордовый через CSS -->
+         <img src="@/assets/images/doctor.jpg" alt="doctor" class="doc-img">
         <span class="doc-wrap" aria-hidden="true">
-          <img src="@\assets\images\doctor.jpg" alt="doctor">
+          <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="logo-img">
         </span>
         <h1>Клиника «Оптимед»</h1>
       </a>
@@ -138,7 +75,7 @@ const analyze = () => {
     </div>
   </header>
 
-  <dev class="container">
+  <div class="container">
     <!-- Информация -->
     <section id="about" class="about" aria-labelledby="aboutTitle">
       <h2 id="aboutTitle">Современная клиника полного цикла</h2>
@@ -188,7 +125,7 @@ const analyze = () => {
       </div>
       <p class="muted" id="nothingFound" style="display:none">Ничего не найдено. Попробуйте изменить запрос.</p>
     </section>
-  </dev>
+  </div>
 
   <footer id="contacts">
     <div class="container">
@@ -217,50 +154,40 @@ const analyze = () => {
       </div>
     </form>
   </dialog>
-
-  <!-- <script>
-    const kebabBtn=document.getElementById('kebabBtn');
-    const kebabMenu=document.getElementById('kebabMenu');
-    kebabBtn.addEventListener('click',()=>{const open=kebabMenu.classList.toggle('open');kebabBtn.setAttribute('aria-expanded',String(open));});
-    document.addEventListener('click',(e)=>{if(!kebabMenu.contains(e.target)&&!kebabBtn.contains(e.target)){kebabMenu.classList.remove('open');kebabBtn.setAttribute('aria-expanded','false');}});
-
-    const dlg=document.getElementById('bookModal');
-    document.getElementById('openBook').addEventListener('click',()=>dlg.showModal());
-    dlg.addEventListener('close',()=>{if(dlg.returnValue==='ok') alert('Спасибо! Мы свяжемся с вами в ближайшее время.');});
-
-    document.querySelectorAll('.action').forEach(btn=>btn.addEventListener('click',()=>dlg.showModal()));
-
-    const input=document.getElementById('searchInput'); const clearBtn=document.getElementById('clearSearch');
-    const grid=document.getElementById('servicesGrid'); const empty=document.getElementById('nothingFound');
-    function filter(){
-      const q=input.value.trim().toLowerCase(); let visible=0;
-      grid.querySelectorAll('.card').forEach(card=>{
-        const t=(card.dataset.title||card.textContent).toLowerCase(); const show=!q||t.includes(q);
-        card.style.display=show?'':'none'; if(show) visible++;
-      });
-      empty.style.display=visible?'none':'';
-    }
-    input.addEventListener('input',filter);
-    clearBtn.addEventListener('click',()=>{input.value='';filter();});
-  </script> -->
-  </dev>
+  </div>
 
 </template>
 
-<style scoped>
-
+<style>
     :root{
       --burgundy:#7a1732;
       --burgundy-700:#5f1227;
       --gray-50:#f6f7f8; --gray-200:#e5e7eb; --gray-500:#6b7280; --gray-800:#1f2937;
       --white:#ffffff; --radius:14px; --shadow:0 8px 24px rgba(0,0,0,.08); --container:1180px;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-size:16px;line-height:1.5}
     body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--gray-800);
       background:linear-gradient(0deg,var(--gray-50),#ffffff);}
     .container{max-width:var(--container);margin:0 auto;padding:0 20px}
 
+    /* АДАПТИВНОСТЬ - ДОБАВЛЕНО */
+    @media (max-width: 768px) {
+      :root { --container: 100%; }
+      .container { padding: 0 15px; }
+      .topbar { flex-direction: column; gap: 12px; text-align: center; }
+      .brand { flex-direction: column; gap: 8px; }
+      .cta { width: 100%; justify-content: center; flex-wrap: wrap; }
+      .search-wrap { padding: 12px 0; }
+      .search { flex-direction: column; padding: 12px; }
+      .about { padding: 20px; margin-top: 12px; }
+      .about h2 { font-size: 1.5rem; }
+      .services h3 { font-size: 1.4rem; margin-bottom: 10px; }
+      .card { padding: 14px; }
+      .card h4 { font-size: 1.1rem; }
+      .card p { font-size: 0.95rem; }
+      footer { padding: 20px 0; font-size: 14px; text-align: center; }
+    }
     
     header{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);box-shadow:0 2px 10px rgba(0,0,0,.04)}
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
@@ -269,6 +196,7 @@ const analyze = () => {
 
     /* логотип + врач */
     .logo-img{height:44px;width:auto;display:block}
+    .doc-img{height:40px;width:auto;border-radius:8px}
     .doc-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;position:relative;box-shadow:var(--shadow)}
     /* Перекрашиваем зелёный в бордовый: подберите при необходимости значения hue-rotate/saturate */
     .doc-wrap img{width:100%;height:100%;object-fit:cover;filter:hue-rotate(315deg) saturate(130%);}
@@ -296,24 +224,37 @@ const analyze = () => {
 
     
     .about{margin-top:22px;background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);display:grid;gap:10px}
-    .about h2{margin:0 0 6px 0}
+    .about h2{margin:0 0 6px 0;font-size:1.8rem}
+    .about p{font-size:1.1rem;line-height:1.6;color:var(--gray-800)}
     .badges{display:flex;gap:10px;flex-wrap:wrap}
     .badge{background:#f3f4f6;border-radius:999px;padding:6px 10px;font-size:13px}
 
     .services{margin:26px 0 60px}
-    .services h3{margin:0 0 14px 0}
+    .services h3{margin:0 0 14px 0;font-size:1.6rem}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
     .card{grid-column:span 4;background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
-    .card h4{margin:0}
-    .card p{margin:0;color:var(--gray-500)}
-    .card .price{margin-top:auto;font-weight:700}
+    .card h4{margin:0;font-size:1.2rem;color:var(--burgundy)}
+    .card p{margin:0;color:var(--gray-500);font-size:0.95rem}
+    .card .price{margin-top:auto;font-weight:700;font-size:1.1rem;color:var(--burgundy)}
     .card .action{margin-top:8px;align-self:flex-start;background:var(--burgundy);color:#fff;border:0;border-radius:10px;padding:10px 12px;cursor:pointer}
     .action:hover{background:var(--burgundy-700)}
     .muted{color:var(--gray-500)}
 
     footer{border-top:1px solid var(--gray-200);background:var(--white);color:var(--gray-500);padding:28px 0;font-size:14px}
 
-    @media (max-width:960px){.card{grid-column:span 6}}
-    @media (max-width:640px){.brand h1{display:none}.search-wrap{padding-top:10px}.card{grid-column:span 12}.kebab-menu{right:12px}}
-  
-</style>;
+    @media (max-width:960px){
+      .grid{grid-template-columns:repeat(6,1fr)}
+      .card{grid-column:span 3}
+    }
+    @media (max-width:768px){
+      .grid{grid-template-columns:repeat(1,1fr)}
+      .card{grid-column:span 1}
+      .brand h1{font-size:16px}
+    }
+    @media (max-width:640px){
+      .brand h1{display:block;font-size:18px}
+      .search-wrap{padding-top:10px}
+      .kebab-menu{right:12px}
+      .topbar{padding:10px 0}
+    }
+  </style>;
