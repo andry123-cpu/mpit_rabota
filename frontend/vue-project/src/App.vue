@@ -1,6 +1,5 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+
 // server.js
 import express from "express";
 import bodyParser from "body-parser";
@@ -18,8 +17,8 @@ function analyzeRequest({ age, symptoms = "", location = "", chronicDiseases = [
   const normalizedSymptoms = symptoms.toLowerCase();
 
   // Ключевые слова для быстрой проверки
-  const severeSymptoms = ["боль в груди", "потеря сознания", "затруднённое дыхание", "высокая температура", "сильная боль"];
-  const moderateSymptoms = ["кашель", "повышенная температура", "усталость", "боль в горле"];
+  const severeSymptoms = ["боль в груди", "потеря сознания", "затруднённое дыхание", "высокая температура", "сильная боль", "Острая боль", "лихорадка", "Боль при мочеиспускании", "Кровавая рвота" ];
+  const moderateSymptoms = ["кашель", "повышенная температура", "усталость", "боль в горле", "боль в животе", "Мышечная слабость", "Боль в спине", "Отеки", "Рвота"];
 
   let priority = "низкий";
   let format = "телемедицина";
@@ -87,14 +86,14 @@ app.listen(PORT, () => {
 <template>
   <header>
     <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
+      <title>OptiMed </title>
     <div class="wrapper">
     
     </div>
   </header>
 
   <main>
-    <TheWelcome />
+   
   </main>
 </template>
 
