@@ -1,39 +1,300 @@
-<!--  <script setup> 
-    const kebabBtn=document.getElementById('kebabBtn');
-    const kebabMenu=document.getElementById('kebabMenu');
-    kebabBtn.addEventListener('click',()=>{const open=kebabMenu.classList.toggle('open');kebabBtn.setAttribute('aria-expanded',String(open));});
-    document.addEventListener('click',(e)=>{if(!kebabMenu.contains(e.target)&&!kebabBtn.contains(e.target)){kebabMenu.classList.remove('open');kebabBtn.setAttribute('aria-expanded','false');}});
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 
-    const dlg=document.getElementById('bookModal');
-    document.getElementById('openBook').addEventListener('click',()=>dlg.showModal());
-    dlg.addEventListener('close',()=>{if(dlg.returnValue==='ok') alert('Спасибо! Мы свяжемся с вами в ближайшее время.');});
+// ========================
+// ДАННЫЕ ПАЦИЕНТА И АНАЛИЗ
+// ========================
 
-    document.querySelectorAll('.action').forEach(btn=>btn.addEventListener('click',()=>dlg.showModal()));
+const patientData = ref({
+  age: null,
+  symptoms: '',
+  location: '',
+  hasChronicDiseases: false
+})
 
-    const input=document.getElementById('searchInput'); const clearBtn=document.getElementById('clearSearch');
-    const grid=document.getElementById('servicesGrid'); const empty=document.getElementById('nothingFound');
-    function filter(){
-      const q=input.value.trim().toLowerCase(); let visible=0;
-      grid.querySelectorAll('.card').forEach(card=>{
-        const t=(card.dataset.title||card.textContent).toLowerCase(); const show=!q||t.includes(q);
-        card.style.display=show?'':'none'; if(show) visible++;
-      });
-      empty.style.display=visible?'none':'';
+const analysisResult = ref(null)
+const isSubmitting = ref(false)
+const apiError = ref(null)
+
+// Списки симптомов для анализа
+const CRITICAL_SYMPTOMS = [
+  'грудная боль', 'потеря сознания', 'одышка', 'инфаркт', 'инсульт',
+  'сильное кровотечение', 'судороги', 'боль в груди', 'затруднённое дыхание'
+]
+
+const HIGH_URGENCY_SYMPTOMS = [
+  'температура выше 39', 'высокая температура', 'сильная боль',
+  'кровотечение', 'рвота с кровью', 'диарея с кровью', 'лихорадка', 
+  'боль при мочеиспускании', 'кровавая рвота', 'острая боль'
+]
+
+const MILD_SYMPTOMS = [
+  'першение', 'легкая усталость', 'головная боль', 'насморк', 'кашель', 
+  'повышенная температура', 'усталость', 'боль в горле', 'боль в животе', 
+  'мышечная слабость', 'боль в спине', 'отеки', 'рвота'
+]
+
+// Нормализация симптомов для анализа
+const normalizeSymptoms = (input) => {
+  if (!input) return []
+  return input.toLowerCase().split(',').map(s => s.trim())
+}
+
+// Определение уровня срочности
+const analyzeUrgency = () => {
+  const age = patientData.value.age
+  const symptoms = normalizeSymptoms(patientData.value.symptoms)
+  const hasChronic = patientData.value.hasChronicDiseases
+
+  let urgency = 'низкая'
+  let format = 'телемедицина'
+
+  // Критическая срочность
+  const hasCriticalSymptom = symptoms.some(s => 
+    CRITICAL_SYMPTOMS.some(cs => s.includes(cs))
+  )
+  
+  const isHighRiskElderly = (age >= 70) || (hasChronic && age >= 60)
+
+  if (hasCriticalSymptom || isHighRiskElderly) {
+    urgency = 'критическая'
+    format = 'выезд врача'
+  } else {
+    // Высокая срочность
+    const hasHighUrgencySymptom = symptoms.some(s => 
+      HIGH_URGENCY_SYMPTOMS.some(hs => s.includes(hs))
+    )
+
+    if (age >= 60 || hasHighUrgencySymptom) {
+      urgency = 'высокая'
+      format = 'очный приём'
+    } else if (symptoms.some(s => 
+      MILD_SYMPTOMS.some(ms => s.includes(ms))
+    )) {
+      urgency = 'средняя'
+      format = 'телемедицина или очно'
+    } else {
+      urgency = 'средняя'
+      format = 'очный приём'
     }
-    input.addEventListener('input',filter);
-    clearBtn.addEventListener('click',()=>{input.value='';filter();});
-</script> -->
+  }
 
+  // Особый случай для пожилых пациентов
+  if (age >= 75 && urgency !== 'критическая') {
+    format = 'выезд врача (по возрасту)'
+  }
+
+  return { urgency, format }
+}
+
+// Отправка данных на сервер (заглушка)
+const submitTriageForm = async () => {
+  if (!patientData.value.age || !patientData.value.symptoms || !patientData.value.location) {
+    alert('Пожалуйста, заполните все обязательные поля')
+    return
+  }
+
+  isSubmitting.value = true
+  apiError.value = null
+
+  try {
+    // Анализируем локально
+    const result = analyzeUrgency()
+    analysisResult.value = result
+    
+    // ЗДЕСЬ БУДЕТ ОТПРАВКА НА БЭКЕНД
+    console.log('Готово к отправке на сервер:', {
+      ...patientData.value,
+      urgency: result.urgency,
+      recommendedFormat: result.format
+    })
+    
+    alert('Анализ завершен! Результаты готовы к отправке на сервер.')
+    
+  } catch (error) {
+    console.error('Ошибка при анализе:', error)
+    apiError.value = 'Ошибка при анализе данных'
+    alert('Ошибка при анализе. Попробуйте позже.')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// Очистка формы
+const resetForm = () => {
+  patientData.value = {
+    age: null,
+    symptoms: '',
+    location: '',
+    hasChronicDiseases: false
+  }
+  analysisResult.value = null
+  apiError.value = null
+}
+
+// Вычисляемые свойства для отображения
+const urgencyClass = computed(() => {
+  if (!analysisResult.value) return ''
+  const urgency = analysisResult.value.urgency.toLowerCase()
+  return `urgency-${urgency}`
+})
+
+const recommendationText = computed(() => {
+  if (!analysisResult.value) return ''
+  
+  switch (analysisResult.value.urgency) {
+    case 'критическая':
+      return 'Немедленно вызовите скорую помощь или обратитесь в приемное отделение больницы.'
+    case 'высокая':
+      return 'Обратитесь в клинику в течение 24 часов. Если состояние ухудшится - вызовите скорую.'
+    case 'средняя':
+      return 'Запишитесь на прием в ближайшие 2-3 дня. При ухудшении состояния обратитесь раньше.'
+    case 'низкая':
+      return 'Можете записаться на прием в удобное время или проконсультироваться по телефону.'
+    default:
+      return 'Проконсультируйтесь с врачом для уточнения рекомендаций.'
+  }
+})
+
+// ========================
+// ФУНКЦИОНАЛ СТРАНИЦЫ
+// ========================
+
+// Мобильное меню
+onMounted(() => {
+  const kebabBtn = document.getElementById('kebabBtn')
+  const kebabMenu = document.getElementById('kebabMenu')
+  
+  if (kebabBtn && kebabMenu) {
+    kebabBtn.addEventListener('click', () => {
+      const isOpen = kebabMenu.classList.toggle('open')
+      kebabBtn.setAttribute('aria-expanded', String(isOpen))
+    })
+
+    document.addEventListener('click', (e) => {
+      if (!kebabMenu.contains(e.target) && !kebabBtn.contains(e.target)) {
+        kebabMenu.classList.remove('open')
+        kebabBtn.setAttribute('aria-expanded', 'false')
+      }
+    })
+  }
+
+  // Модальное окно записи
+  const dlg = document.getElementById('bookModal')
+  const openBookBtn = document.getElementById('openBook')
+  
+  if (openBookBtn && dlg) {
+    openBookBtn.addEventListener('click', () => dlg.showModal())
+    
+    dlg.addEventListener('close', () => {
+      if (dlg.returnValue === 'ok') {
+        alert('Спасибо! Мы свяжемся с вами в ближайшее время.')
+      }
+    })
+  }
+
+  // Кнопки "Записаться" в карточках услуг
+  document.querySelectorAll('.action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (dlg) dlg.showModal()
+    })
+  })
+})
+
+// Поиск по услугам
+const searchQuery = ref('')
+const showNoResults = ref(false)
+
+const services = ref([
+  { title: 'Терапевт первичный приём', description: 'Базовая диагностика, план обследований и рекомендации.', price: 'от 1 900 ₽', visible: true },
+  { title: 'Педиатр первичный приём', description: 'Наблюдение детей с рождения, индивидуальный подход.', price: 'от 2 100 ₽', visible: true },
+  { title: 'УЗИ диагностика брюшной полости', description: 'Аппараты экспертного класса, заключение сразу.', price: 'от 1 500 ₽', visible: true },
+  { title: 'Стоматология лечение и гигиена', description: 'Лечение, гигиена, эстетика. Безболезненно и аккуратно.', price: 'от 2 500 ₽', visible: true },
+  { title: 'Анализы лаборатория ПЦР биохимия', description: 'Биохимия, гормоны, ПЦР. Результаты — в личном кабинете.', price: 'по прайсу', visible: true },
+  { title: 'Кардиолог ЭКГ эхокардиография', description: 'Оценка рисков, подбор терапии, ЭКГ на месте.', price: 'от 2 400 ₽', visible: true }
+])
+
+const filteredServices = computed(() => {
+  const query = searchQuery.value.trim().toLowerCase()
+  if (!query) {
+    showNoResults.value = false
+    return services.value
+  }
+
+  const filtered = services.value.map(service => {
+    const matches = service.title.toLowerCase().includes(query) || 
+                   service.description.toLowerCase().includes(query)
+    return { ...service, visible: matches }
+  })
+
+  const visibleCount = filtered.filter(s => s.visible).length
+  showNoResults.value = visibleCount === 0
+  
+  return filtered
+})
+
+const clearSearch = () => {
+  searchQuery.value = ''
+  showNoResults.value = false
+}
+
+// Запись на приём
+const bookAppointment = () => {
+  const dlg = document.getElementById('bookModal')
+  if (dlg) dlg.showModal()
+}
+
+const closeModal = () => {
+  const dlg = document.getElementById('bookModal')
+  if (dlg) dlg.close('cancel')
+}
+
+// ========================
+// ДАННЫЕ ДЛЯ МОДАЛЬНОГО ОКНА
+// ========================
+
+const bookingData = ref({
+  name: '',
+  phone: '',
+  service: ''
+})
+
+const submitBookingForm = async () => {
+  if (!bookingData.value.name || !bookingData.value.phone) {
+    alert('Пожалуйста, заполните имя и телефон')
+    return
+  }
+
+  try {
+    // ЗДЕСЬ БУДЕТ ОТПРАВКА ЗАПИСИ НА БЭКЕНД
+    console.log('Готово к отправке записи:', {
+      ...bookingData.value,
+      triageResult: analysisResult.value
+    })
+    
+    alert('Спасибо! Мы свяжемся с вами в ближайшее время.')
+    
+    // Закрываем модальное окно
+    const dlg = document.getElementById('bookModal')
+    if (dlg) dlg.close('ok')
+    
+    // Очищаем форму
+    bookingData.value = { name: '', phone: '', service: '' }
+    
+  } catch (error) {
+    console.error('Ошибка при создании записи:', error)
+    alert('Не удалось создать запись. Попробуйте позже.')
+  }
+}
+</script>
 <template>
   <div>
   <header>
     <div class="container topbar" aria-label="Верхняя панель">
-      <a class="brand" href="#" aria-label="На главную">
-         <img src="@/assets/images/doctor.jpg" alt="doctor" class="doc-img">
-        <span class="doc-wrap" aria-hidden="true">
-          <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="logo-img">
-        </span>
-        <h1>Клиника «Оптимед»</h1>
+  <a class="brand" href="#" aria-label="На главную">
+  <img src="@/assets/images/doctor.jpg" alt="Врач" class="doc-img">
+  <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="main-logo">
+  <h1>Клиника «Оптимед»</h1>
       </a>
 
       <!-- «Записаться» + телефон + троеточие -->
@@ -194,11 +455,37 @@
     .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
     .brand h1{font-size:18px;line-height:1.1;margin:0}
 
-    /* логотип + врач */
-    .logo-img{height:44px;width:auto;display:block}
-    .doc-img{height:40px;width:auto;border-radius:8px}
-    .doc-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;position:relative;box-shadow:var(--shadow)}
-    /* Перекрашиваем зелёный в бордовый: подберите при необходимости значения hue-rotate/saturate */
+    .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit; }
+
+/*стиль лого */
+.main-logo {
+  height: 50px;
+  width: auto;
+  display: block;
+  border-radius: 8px; 
+  box-shadow: var(--shadow); }
+
+ /*доктор */
+.doc-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--shadow);
+
+  background-color: #f8f9fa; }
+
+.brand h1 {
+  font-size: 20px;
+  margin: 0;
+  align-self: center; }
+
+    /* Перекрашиваем зелёный в бордовый: */
     .doc-wrap img{width:100%;height:100%;object-fit:cover;filter:hue-rotate(315deg) saturate(130%);}
 
     .kebab{border:1px solid var(--gray-200);background:var(--white);border-radius:12px;padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
@@ -208,14 +495,14 @@
     .kebab-menu a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;color:inherit;text-decoration:none}
     .kebab-menu a:hover{background:#f3f4f6}
 
-    /* ====== CTA ====== */
+    /*CTA*/
     .cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
     .btn{border:0;border-radius:999px;padding:12px 18px;cursor:pointer;font-weight:600;letter-spacing:.2px}
     .btn-primary{background:var(--burgundy);color:var(--white);box-shadow:0 6px 18px rgba(122,23,50,.25)}
     .btn-primary:hover{background:var(--burgundy-700)}
     .phone{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--burgundy);text-decoration:none;white-space:nowrap}
 
-    /* ====== Поиск ====== */
+    /*Поиск*/
     .search-wrap{padding:22px 0 8px}
     .search{display:flex;gap:12px;align-items:center;background:var(--white);border:1px solid var(--gray-200);border-radius:999px;padding:10px 14px;box-shadow:var(--shadow)}
     .search input{border:0;outline:0;flex:1;font-size:16px;background:transparent}
