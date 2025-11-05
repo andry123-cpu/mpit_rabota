@@ -75,7 +75,7 @@ const analyzeUrgency = () => {
       format = 'телемедицина или очно'
     } else {
       urgency = 'средняя'
-      format = 'очный приём'
+      format = 'очной приём'
     }
   }
 
@@ -287,14 +287,15 @@ const submitBookingForm = async () => {
   }
 }
 </script>
+
 <template>
   <div>
   <header>
     <div class="container topbar" aria-label="Верхняя панель">
-  <a class="brand" href="#" aria-label="На главную">
-  <img src="@/assets/images/doctor.jpg" alt="Врач" class="doc-img">
-  <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="main-logo">
-  <h1>Клиника «Оптимед»</h1>
+      <a class="brand" href="#" aria-label="На главную">
+        <img src="@/assets/images/doctor.jpg" alt="Врач" class="doc-img">
+        <img src="@/assets/images/Logo.png" alt="Оптимед — логотип" class="main-logo">
+        <h1>Клиника «Оптимед»</h1>
       </a>
 
       <!-- «Записаться» + телефон + троеточие -->
@@ -306,10 +307,6 @@ const submitBookingForm = async () => {
           +7 999 123-45-67
         </a>
         <button class="btn btn-primary" id="openBook">Записаться</button>
-        
-<router-link to="/dashboard" class="btn btn-secondary" style="background:#f3f4f6;color:#1f2937;margin-left:10px">
-  Панель врача
-</router-link>
 
         <button class="kebab" id="kebabBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Дополнительное меню">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -318,7 +315,6 @@ const submitBookingForm = async () => {
           Меню
         </button>
       </div>
-
 
       <nav class="kebab-menu" id="kebabMenu" aria-label="Меню">
         <a href="#about">О клинике</a>
@@ -330,13 +326,13 @@ const submitBookingForm = async () => {
 
     
     <div class="container search-wrap">
-      <form class="search" role="search" aria-label="Поиск по услугам" onsubmit="event.preventDefault();">
+      <form class="search" role="search" aria-label="Поиск по услугам" @submit.prevent>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
           <path d="M21 21l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-        <input id="searchInput" type="search" placeholder="Поиск по услугам и специалистам…" autocomplete="off" />
-        <button type="button" id="clearSearch" title="Очистить">Очистить</button>
+        <input id="searchInput" type="search" v-model="searchQuery" placeholder="Поиск по услугам и специалистам…" autocomplete="off" />
+        <button type="button" id="clearSearch" @click="clearSearch" title="Очистить">Очистить</button>
       </form>
     </div>
   </header>
@@ -358,38 +354,20 @@ const submitBookingForm = async () => {
     <section id="services" class="services" aria-labelledby="servicesTitle">
       <h3 id="servicesTitle">Популярные услуги</h3>
       <div class="grid" id="servicesGrid" aria-live="polite">
-        <article class="card" data-title="Терапевт первичный приём">
-          <h4>Терапевт — первичный приём</h4>
-          <p>Базовая диагностика, план обследований и рекомендации.</p>
-          <div class="price">от 1 900 ₽</div><button class="action">Записаться</button>
-        </article>
-        <article class="card" data-title="Педиатр первичный приём">
-          <h4>Педиатр — первичный приём</h4>
-          <p>Наблюдение детей с рождения, индивидуальный подход.</p>
-          <div class="price">от 2 100 ₽</div><button class="action">Записаться</button>
-        </article>
-        <article class="card" data-title="УЗИ диагностика брюшной полости">
-          <h4>УЗИ диагностика</h4>
-          <p>Аппараты экспертного класса, заключение сразу.</p>
-          <div class="price">от 1 500 ₽</div><button class="action">Записаться</button>
-        </article>
-        <article class="card" data-title="Стоматология лечение и гигиена">
-          <h4>Стоматология</h4>
-          <p>Лечение, гигиена, эстетика. Безболезненно и аккуратно.</p>
-          <div class="price">от 2 500 ₽</div><button class="action">Записаться</button>
-        </article>
-        <article class="card" data-title="Анализы лаборатория ПЦР биохимия">
-          <h4>Лабораторные анализы</h4>
-          <p>Биохимия, гормоны, ПЦР. Результаты — в личном кабинете.</p>
-          <div class="price">по прайсу</div><button class="action">Записаться</button>
-        </article>
-        <article class="card" data-title="Кардиолог ЭКГ эхокардиография">
-          <h4>Кардиолог + ЭКГ</h4>
-          <p>Оценка рисков, подбор терапии, ЭКГ на месте.</p>
-          <div class="price">от 2 400 ₽</div><button class="action">Записаться</button>
+        <article 
+          v-for="(service, index) in filteredServices" 
+          :key="index"
+          class="card" 
+          :data-title="service.title"
+          :class="{ hidden: !service.visible }"
+        >
+          <h4>{{ service.title }}</h4>
+          <p>{{ service.description }}</p>
+          <div class="price">{{ service.price }}</div>
+          <button class="action">Записаться</button>
         </article>
       </div>
-      <p class="muted" id="nothingFound" style="display:none">Ничего не найдено. Попробуйте изменить запрос.</p>
+      <p class="muted" id="nothingFound" v-show="showNoResults">Ничего не найдено. Попробуйте изменить запрос.</p>
     </section>
   </div>
 
@@ -397,31 +375,37 @@ const submitBookingForm = async () => {
     <div class="container">
       <strong>Клиника «Оптимед»</strong><br>
       г. <b>Астрахань</b>, ул. Примерная, 10 • Ежедневно 8:00–21:00<br>
-      Тел.: <a class="phone" href="tel:+79991234567">+7 999 123-45-67</a> • E-mail: info@clinic.example
+      <div class="contact-row">
+        <span>Тел.: <a class="phone" href="tel:+79991234567">+7 999 123-45-67</a></span>
+        <router-link to="/dashboard" class="admin-link" aria-label="Панель врача для медицинского персонала">
+          <span class="admin-text">Панель врача</span>
+          <span class="admin-icon">👨‍⚕️</span>
+        </router-link>
+      </div>
+      E-mail: info@clinic.example
     </div>
   </footer>
 
   <!-- Модальное окно записи -->
-  <dialog id="bookModal" style="border:0;border-radius:16px;padding:0;max-width:520px;width:92%">
-    <form method="dialog" style="padding:22px 20px">
+  <dialog id="bookModal" ref="bookModal" style="border:0;border-radius:16px;padding:0;max-width:520px;width:92%">
+    <form method="dialog" style="padding:22px 20px" @submit.prevent="submitBookingForm">
       <h3 style="margin:0 0 8px 0;color:var(--burgundy)">Запись на приём</h3>
       <p class="muted" style="margin-top:0">Оставьте контакты, и администратор свяжется с вами.</p>
       <div style="display:grid;gap:10px">
-        <input required name="name" placeholder="Ваше имя" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
-        <input required name="tel" placeholder="Телефон" pattern="\\+?[0-9\\s\\-()]{6,}" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
-        <select name="service" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+        <input required v-model="bookingData.name" placeholder="Ваше имя" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+        <input required v-model="bookingData.phone" placeholder="Телефон" pattern="\\+?[0-9\\s\\-()]{6,}" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
+        <select v-model="bookingData.service" style="padding:12px;border:1px solid var(--gray-200);border-radius:10px">
           <option>Терапевт</option><option>Педиатр</option><option>УЗИ</option>
           <option>Стоматология</option><option>Анализы</option><option>Кардиолог</option>
         </select>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px">
-        <button class="btn" value="cancel">Отмена</button>
-        <button class="btn btn-primary" value="ok">Отправить</button>
+        <button class="btn" @click="closeModal" value="cancel">Отмена</button>
+        <button class="btn btn-primary" type="submit" value="ok">Отправить</button>
       </div>
     </form>
   </dialog>
   </div>
-
 </template>
 
 <style>
@@ -448,28 +432,83 @@ body {
 }
 .container { max-width: var(--container); margin: 0 auto; padding: 0 20px; }
 
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;font-size:16px;line-height:1.5}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--gray-800);
-      background:linear-gradient(0deg,var(--gray-50),#ffffff);}
-    .container{max-width:var(--container);margin:0 auto;padding:0 20px}
-
-    /* АДАПТИВНОСТЬ - ДОБАВЛЕНО */
+    /* АДАПТИВНОСТЬ - УЛУЧШЕНАЯ */
     @media (max-width: 768px) {
       :root { --container: 100%; }
       .container { padding: 0 15px; }
-      .topbar { flex-direction: column; gap: 12px; text-align: center; }
-      .brand { flex-direction: column; gap: 8px; }
-      .cta { width: 100%; justify-content: center; flex-wrap: wrap; }
-      .search-wrap { padding: 12px 0; }
-      .search { flex-direction: column; padding: 12px; }
-      .about { padding: 20px; margin-top: 12px; }
-      .about h2 { font-size: 1.5rem; }
-      .services h3 { font-size: 1.4rem; margin-bottom: 10px; }
-      .card { padding: 14px; }
-      .card h4 { font-size: 1.1rem; }
-      .card p { font-size: 0.95rem; }
-      footer { padding: 20px 0; font-size: 14px; text-align: center; }
+      .topbar { 
+        flex-direction: column; 
+        gap: 12px; 
+        text-align: center; 
+        padding: 10px 0;
+      }
+      .brand { 
+        flex-direction: column; 
+        gap: 8px; 
+        width: 100%;
+      }
+      .brand h1 {
+        font-size: 18px;
+        margin-top: 5px;
+      }
+      .cta { 
+        width: 100%; 
+        justify-content: center; 
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+      .search-wrap { padding: 12px 0 5px 0; }
+      .search { 
+        flex-direction: column; 
+        padding: 10px; 
+        border-radius: 12px;
+      }
+      .search input {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .search button {
+        align-self: flex-end;
+        padding: 8px 16px;
+      }
+      .about { 
+        padding: 20px; 
+        margin-top: 12px; 
+      }
+      .about h2 { font-size: 1.4rem; }
+      .services h3 { 
+        font-size: 1.3rem; 
+        margin-bottom: 8px; 
+      }
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .card { 
+        padding: 14px; 
+        grid-column: span 1 !important;
+      }
+      .card h4 { font-size: 1rem; }
+      .card p { font-size: 0.9rem; }
+      .card .price { font-size: 1rem; }
+      .card .action {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+      footer { 
+        padding: 20px 0; 
+        font-size: 14px; 
+        text-align: center;
+      }
+      .contact-row {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .admin-link {
+        justify-content: center;
+        width: 100%;
+      }
     }
     
     header{position:sticky;top:0;z-index:50;background:var(--white);border-bottom:1px solid var(--gray-200);box-shadow:0 2px 10px rgba(0,0,0,.04)}
@@ -477,38 +516,30 @@ body {
     .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
     .brand h1{font-size:18px;line-height:1.1;margin:0}
 
-    .brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit; }
+    /*стиль лого */
+    .main-logo {
+      height: 50px;
+      width: auto;
+      display: block;
+      border-radius: 8px; 
+      box-shadow: var(--shadow); 
+    }
 
-/*стиль лого */
-.main-logo {
-  height: 50px;
-  width: auto;
-  display: block;
-  border-radius: 8px; 
-  box-shadow: var(--shadow); }
+    /*доктор */
+    .doc-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow);
+      background-color: #f8f9fa; 
+    }
 
- /*доктор */
-.doc-img {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: var(--shadow);
-
-  background-color: #f8f9fa; }
-
-.brand h1 {
-  font-size: 20px;
-  margin: 0;
-  align-self: center; }
-
-    /* Перекрашиваем зелёный в бордовый: */
-    .doc-wrap img{width:100%;height:100%;object-fit:cover;filter:hue-rotate(315deg) saturate(130%);}
+    .brand h1 {
+      font-size: 20px;
+      margin: 0;
+      align-self: center; 
+    }
 
     .kebab{border:1px solid var(--gray-200);background:var(--white);border-radius:12px;padding:10px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
     .kebab:hover{background:#fafafa}
@@ -522,6 +553,9 @@ body {
     .btn{border:0;border-radius:999px;padding:12px 18px;cursor:pointer;font-weight:600;letter-spacing:.2px}
     .btn-primary{background:var(--burgundy);color:var(--white);box-shadow:0 6px 18px rgba(122,23,50,.25)}
     .btn-primary:hover{background:var(--burgundy-700)}
+    
+
+    
     .phone{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--burgundy);text-decoration:none;white-space:nowrap}
 
     /*Поиск*/
@@ -542,6 +576,7 @@ body {
     .services h3{margin:0 0 14px 0;font-size:1.6rem}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12,1fr)}
     .card{grid-column:span 4;background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+    .card.hidden { display: none; }
     .card h4{margin:0;font-size:1.2rem;color:var(--burgundy)}
     .card p{margin:0;color:var(--gray-500);font-size:0.95rem}
     .card .price{margin-top:auto;font-weight:700;font-size:1.1rem;color:var(--burgundy)}
@@ -557,7 +592,7 @@ body {
     }
     @media (max-width:768px){
       .grid{grid-template-columns:repeat(1,1fr)}
-      .card{grid-column:span 1}
+      .card{grid-column:span 1 !important}
       .brand h1{font-size:16px}
     }
     @media (max-width:640px){
@@ -566,6 +601,71 @@ body {
       .kebab-menu{right:12px}
       .topbar{padding:10px 0}
     }
-
     
-  </style>;
+    /* СТИЛИ ДЛЯ КНОПКИ В ФУТЕРЕ */
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin: 4px 0;
+    }
+
+    .admin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--gray-500);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: rgba(122, 23, 50, 0.03);
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .admin-link:hover {
+      color: var(--burgundy);
+      background: rgba(122, 23, 50, 0.08);
+      border-color: rgba(122, 23, 50, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .admin-icon {
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    @media (max-width: 768px) {
+      .contact-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      
+      .admin-link {
+        font-size: 12px;
+        padding: 3px 7px;
+      }
+      
+      .admin-text {
+        display: inline;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .admin-link {
+        font-size: 11px;
+        padding: 2px 6px;
+      }
+      
+      .admin-icon {
+        font-size: 12px;
+      }
+      
+      .admin-text {
+        display: none;
+      }
+    }
+</style>

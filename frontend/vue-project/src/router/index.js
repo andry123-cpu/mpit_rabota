@@ -1,20 +1,16 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-
-// Импортируем компоненты
-const HomeView = () => import('../views/HomeView.vue')
-const DashboardView = () => import('../views/DashboardView.vue')
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView
+    component: () => import('../views/HomeView.vue')
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: DashboardView,
-    meta: { requiresAuth: false } // пока без аутентификации
+    component: () => import('../views/DashboardView.vue')
   }
 ]
 
