@@ -544,4 +544,6 @@ const submitBookingForm = async () => {
       .kebab-menu{right:12px}
       .topbar{padding:10px 0}
     }
+
+    
   </style>;
