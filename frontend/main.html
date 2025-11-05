@@ -1,15 +1,93 @@
-<!DOCKTYPE html>
-<html lang="en">
- <head>
-   <meta charset="UTF-8" />
-   <meta
-            name="viewport"
-            content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
-   />
-   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-   <link rel="stylesheet" href="style/style.css" />
-   <title>OptiMed</title>
- </head>
- <body>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Темная Тема</title>
+<style>
+  /* Общий стиль для тела */
+  body {
+    margin: 0;
+    padding: 20px;
+    background-color: #121212; /* темный фон */
+    font-family: Arial, sans-serif;
+    color: #eee; /* светлый текст */
+  }
 
- </html>
+  /* Заголовок */
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* Контейнер для колонок */
+  .dashboard {
+    display: flex;
+    gap: 20px; /* расстояние между колонками */
+    flex-wrap: wrap; /* перенос при необходимости */
+  }
+
+  /* Стиль для каждой колонки */
+  .column {
+    background-color: #1e1e1e; /* чуть светлее фон для колонок */
+    flex: 1; /* равное распределение ширины */
+    min-width: 200px; /* минимальная ширина */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Заголовки колонок */
+  .column h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    color: #fff;
+  }
+
+  /* Для содержания внутри колонок, можно добавлять элементы по желанию */
+  /* Например, заглушки */
+  .item {
+    background-color: #333;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: #ddd;
+  }
+
+  /* Адаптивность */
+  @media(max-width: 768px){
+    .dashboard {
+      flex-direction: column;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Dashboard</h1>
+<div class="dashboard">
+  <div class="column" id="priemy">
+    <h2>Приёмы</h2>
+    <div class="item">Запись 1</div>
+    <div class="item">Запись 2</div>
+    <div class="item">Запись 3</div>
+  </div>
+  <div class="column" id="vrachi">
+    <h2>Врачи</h2>
+    <div class="item">Врач 1</div>
+    <div class="item">Врач 2</div>
+    <div class="item">Врач 3</div>
+  </div>
+  <div class="column" id="dostup">
+    <h2>Доступ</h2>
+    <div class="item">Пользователь 1</div>
+    <div class="item">Пользователь 2</div>
+    <div class="item">Пользователь 3</div>
+  </div>
+</div>
+
+</body>
+</html>
