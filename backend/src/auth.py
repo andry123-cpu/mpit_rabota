@@ -21,7 +21,7 @@ def create_access_token(user_data) -> str:
     token = jwt.encode(to_encode, os.getenv('AUTH_SECRET_KEY'))
     return token
 
-def verify_password(password, hashed_password):
+def verify_password(password: str, hashed_password: str):
     return ctx.verify(password, hashed_password)
 
 

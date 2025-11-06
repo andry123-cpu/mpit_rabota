@@ -109,7 +109,7 @@ class AppointmentRequestsModel(Base):
 class UsersModel(Base):
     
     """
-    Таблица для хранения пользователей
+    Таблица для хранения пользователей панели управления (dashboard)
     """
     
     __tablename__ = "users"
@@ -118,5 +118,4 @@ class UsersModel(Base):
     username: Mapped[str] = mapped_column(String(20))
     password: Mapped[str] = mapped_column(String(255))
     role: Mapped[int] = mapped_column()
-    is_superuser: Mapped[bool] = mapped_column(default=False)
     
