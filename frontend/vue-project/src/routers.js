@@ -4,18 +4,18 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/HomeView.vue')
+    component: () => import('./views/HomeView.vue')
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('../views/DashboardView.vue'),
+    component: () => import('./views/DashboardView.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/dashboard/login',
     name: 'Login',
-    component: () => import('../views/LoginView.vue')
+    component: () => import('./views/LoginView.vue')
   }
 ]
 
@@ -29,15 +29,13 @@ router.beforeEach((to, from, next) => {
   
   // Если маршрут требует аутентификации и токена нет
   if (to.meta.requiresAuth && !token) {
-    next({ name: 'Login' }) // перенаправляем на страницу логина
+    next({ name: 'Login' })
   } 
   // Если пользователь пытается зайти на страницу логина, но уже авторизован
   else if (to.name === 'Login' && token) {
-    next({ name: 'Dashboard' }) // перенаправляем на дашборд
+    next({ name: 'Dashboard' })
   } 
-  else {
-    next() // разрешаем навигацию
-  }
+  else { next() }
 })
 
 export default router

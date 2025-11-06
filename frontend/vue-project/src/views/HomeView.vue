@@ -5,30 +5,6 @@ const isHighContrast = ref(false)
 const fontSizeScale = ref(1.0) 
 
 
-const sendToDatabase = async (data) => {
-  try {
-    const response = await fetch('https://your-api-endpoint.com/api/triage', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-      },
-      body: JSON.stringify(data)
-    })
-    
-    if (!response.ok) {
-      throw new Error('Ошибка сервера: ' + response.status)
-    }
-    
-    return await response.json()
-  } catch (error) {
-    console.error('Ошибка при отправке данных:', error)
-    throw error
-  }
-}
-
-
-
 // Загружаем настройки из localStorage
 onMounted(() => {
   const savedContrast = localStorage.getItem('highContrastMode')
