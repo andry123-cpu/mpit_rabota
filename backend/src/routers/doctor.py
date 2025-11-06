@@ -1,15 +1,17 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import insert, select
+from auth import UserRole, requires_role
 
-from src.dependencies import Session
+from dependencies import Session
 
-from src.database.models import (
+from database.models import (
     EmployeesModel, 
     EmployeeHiringFormatsModel, 
     EmployeePositionsModel,
-    HospitalsModel
+    HospitalsModel,
+    UsersModel
 )
 
 router = APIRouter()
@@ -39,6 +41,7 @@ async def get_doctors(
         select(
             EmployeesModel.id,
             EmployeesModel.last_name,
+            EmployeesModel.first_name,
             EmployeesModel.patronymic,
             EmployeePositionsModel.title.label('position'),
             EmployeeHiringFormatsModel.name.label('hiring_format'),
@@ -82,6 +85,39 @@ async def get_doctors(
     description="Зарегистрировать нового доктора"
 )
 async def add_doctor(
-     session: Session, new_doctor: Doctor
+    session: Session, 
+    new_doctor: Doctor,
+    current_user: UsersModel = Depends(requires_role([UserRole.ADMIN]))
 ):
-    ...
+    await session.execute(
+        insert(EmployeesModel).values(
+            last_name=new_doctor.last_name,
+            first_name=new_doctor.first_name,
+            patronymic=new_doctor.patronymic,
+            position_id=(
+                select(EmployeePositionsModel.id)
+                .where(
+                    EmployeePositionsModel.title == new_doctor.position
+                )
+                .limit(1)
+            ),
+            hospital_id=(
+                select(HospitalsModel.id)
+                .where(
+                    HospitalsModel.name == new_doctor.hospital.name
+                )
+                .limit(1)
+            ),
+            hiring_format_id=(
+                select(EmployeeHiringFormatsModel.id)
+                .where(
+                    EmployeeHiringFormatsModel.name == new_doctor.hiring_format
+                )
+                .limit(1)
+            ),
+        )
+    )
+    
+    await session.commit()
+    
+    return 201

@@ -65,8 +65,8 @@ class EmployeesModel(Base):
     id: Mapped[ID]
     last_name: Mapped[str] = mapped_column(nullable=False)
     first_name: Mapped[str] = mapped_column(nullable=False)
-    patronymic: mapped_column[str] = mapped_column(nullable=True)
-    hospital_id: mapped_column[int] = mapped_column(
+    patronymic: Mapped[str] = mapped_column(nullable=True)
+    hospital_id: Mapped[int] = mapped_column(
         ForeignKey("hospitals.id", ondelete="CASCADE")
     )
     position_id: Mapped[int] = mapped_column(
@@ -88,7 +88,7 @@ class AppointmentRequestsModel(Base):
     
     last_name: Mapped[str] = mapped_column(nullable=False)
     first_name: Mapped[str] = mapped_column(nullable=False)
-    patronymic: mapped_column[str] = mapped_column(nullable=True)
+    patronymic: Mapped[str] = mapped_column(nullable=True)
 
     age: Mapped[str] = mapped_column(nullable=False)
     
@@ -105,16 +105,6 @@ class AppointmentRequestsModel(Base):
     
     appointment_date: Mapped[datetime] = mapped_column(DateTime)
     
-class UserRolesModel(Base):
-    
-    """
-    Таблица для хранения ролей пользователей
-    """
-    
-    __tablename__ = "user_roles"
-    
-    id: Mapped[ID]
-    name: Mapped[str] = mapped_column(String(50))
 
 class UsersModel(Base):
     
@@ -125,11 +115,8 @@ class UsersModel(Base):
     __tablename__ = "users"
     
     id: Mapped[ID]
-    name: Mapped[str] = mapped_column(String(20))
+    username: Mapped[str] = mapped_column(String(20))
     password: Mapped[str] = mapped_column(String(255))
-    role_id: Mapped[int] = mapped_column(
-        ForeignKey("user_roles.id", ondelete="CASCADE"), 
-        nullable=True
-    )
+    role: Mapped[int] = mapped_column()
     is_superuser: Mapped[bool] = mapped_column(default=False)
     
