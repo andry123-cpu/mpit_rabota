@@ -495,7 +495,7 @@ const submitBookingForm = async () => {
         г. <b>Астрахань</b>, ул. Примерная, 10 • Ежедневно 8:00–21:00<br>
         <div class="contact-row">
           <span>Тел.: <a class="phone" href="tel:+79991234567">+7 999 123-45-67</a></span>
-          <router-link to="/dashboard" class="admin-link" aria-label="Панель врача для медицинского персонала">
+          <router-link to="/dashboard/login" class="admin-link" aria-label="Панель врача для медицинского персонала">
             <span class="admin-text">Панель врача</span>
             <span class="admin-icon">👨‍⚕️</span>
           </router-link>

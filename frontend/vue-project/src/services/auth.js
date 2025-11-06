@@ -2,29 +2,30 @@
 
 export const login = async (username, password) => {
   try {
-    // Здесь будет реальный запрос к API когда он будет готов
     console.log('Попытка входа с данными:', { username, password });
 
     let response = await fetch('http://26.167.186.152:8000/api/auth/login', {
         method: 'POST',
-        header: {
+        headers: { // ИСПРАВЛЕНО: headers вместо header
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            'username': username,
-            'password': password
+            username: username,
+            password: password
         })
-    })
-    if (response.status == 200) {
-        let token = await response.json().token;
-        localStorage.setItem('token', token);
-
-        return token
-    } else {
-        throw new Error('Неверное имя пользователя или пароль');
-    }
-
+    });
     
+    if (response.status === 200) {
+        const data = await response.json(); // Сначала получаем JSON
+        const token = data.token; // Затем извлекаем токен
+        localStorage.setItem('token', token);
+        return token;
+    } else {
+        // Получаем детали ошибки от сервера
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.detail || errorData.message || 'Неверное имя пользователя или пароль';
+        throw new Error(errorMessage);
+    }
   } catch (error) {
     console.error('Ошибка входа:', error);
     throw error;

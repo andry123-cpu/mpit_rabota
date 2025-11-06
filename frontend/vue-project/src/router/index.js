@@ -13,7 +13,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/login',
+    path: '/dashboard/login',
     name: 'Login',
     component: () => import('../views/LoginView.vue')
   }
@@ -24,18 +24,20 @@ const router = createRouter({
   routes
 })
 
-// Навигационный гард для защищенных маршрутов
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const token = localStorage.getItem('token');
-
-  if (requiresAuth && !token) {
-    next('/login');
-  } else if (to.path === '/login' && token) {
-    next('/');
-  } else {
-    next();
+  const token = localStorage.getItem('token')
+  
+  // Если маршрут требует аутентификации и токена нет
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'Login' }) // перенаправляем на страницу логина
+  } 
+  // Если пользователь пытается зайти на страницу логина, но уже авторизован
+  else if (to.name === 'Login' && token) {
+    next({ name: 'Dashboard' }) // перенаправляем на дашборд
+  } 
+  else {
+    next() // разрешаем навигацию
   }
-});
+})
 
 export default router
