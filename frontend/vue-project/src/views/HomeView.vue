@@ -1,11 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 
-// ========================
-// УПРАВЛЕНИЕ ТЕМАМИ
-// ========================
 const isHighContrast = ref(false)
-const fontSizeScale = ref(1.0) // 1.0 = нормальный, 1.5 = увеличенный
+const fontSizeScale = ref(1.0) 
 
 // Загружаем настройки из localStorage
 onMounted(() => {
@@ -20,11 +17,11 @@ onMounted(() => {
     fontSizeScale.value = parseFloat(savedFontSize)
   }
   
-  // Применяем настройки
+
   applyAccessibilitySettings()
 })
 
-// Применяем настройки доступности
+
 const applyAccessibilitySettings = () => {
   document.body.style.fontSize = `${16 * fontSizeScale.value}px`
   
@@ -35,7 +32,7 @@ const applyAccessibilitySettings = () => {
   }
 }
 
-// Сохраняем настройки при изменении
+
 watch(isHighContrast, (newValue) => {
   localStorage.setItem('highContrastMode', JSON.stringify(newValue))
   applyAccessibilitySettings()
@@ -46,7 +43,7 @@ watch(fontSizeScale, (newValue) => {
   applyAccessibilitySettings()
 })
 
-// Переключение контрастного режима
+
 const toggleHighContrast = () => {
   isHighContrast.value = !isHighContrast.value
 }
@@ -66,28 +63,29 @@ const resetAccessibility = () => {
   fontSizeScale.value = 1.0
 }
 
-// Горячие клавиши
+// hot keys
 onMounted(() => {
   document.addEventListener('keydown', (e) => {
-    // Ctrl + + для увеличения шрифта
+
+    // шрифт +
     if (e.ctrlKey && e.key === '+') {
       e.preventDefault()
       increaseFontSize()
     }
     
-    // Ctrl + - для уменьшения шрифта
+    // шрифт - 
     if (e.ctrlKey && e.key === '-') {
       e.preventDefault()
       decreaseFontSize()
     }
     
-    // Ctrl + 0 для сброса
+    // сброс
     if (e.ctrlKey && e.key === '0') {
       e.preventDefault()
       resetAccessibility()
     }
     
-    // Ctrl + C для переключения контраста
+    // контраст
     if (e.ctrlKey && e.key.toLowerCase() === 'c') {
       e.preventDefault()
       toggleHighContrast()
@@ -95,9 +93,6 @@ onMounted(() => {
   })
 })
 
-// ========================
-// ОСТАЛЬНОЙ КОД (анализ пациентов, поиск и т.д.)
-// ========================
 
 const patientData = ref({
   age: null,
