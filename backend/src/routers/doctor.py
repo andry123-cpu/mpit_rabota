@@ -18,10 +18,18 @@ router = APIRouter()
 
 class Hospital(BaseModel):
     name: str
-    street: str
+    street: str | None
 
 class Doctor(BaseModel):
     id: int
+    last_name: str
+    first_name: str
+    patronymic: str
+    position: str
+    hiring_format: str
+    hospital: Hospital
+    
+class DoctorInput(BaseModel):
     last_name: str
     first_name: str
     patronymic: str
@@ -50,15 +58,15 @@ async def get_doctors(
         )
         .join(
             EmployeePositionsModel, 
-            EmployeePositionsModel.id == EmployeesModel.position_id
+            EmployeesModel.position_id == EmployeePositionsModel.id
         )
         .join(
             EmployeeHiringFormatsModel, 
-            EmployeeHiringFormatsModel.id == EmployeesModel.hiring_format_id
+            EmployeesModel.hiring_format_id == EmployeeHiringFormatsModel.id
         )
         .join(
             HospitalsModel, 
-            HospitalsModel.id == EmployeesModel.hospital_id
+            EmployeesModel.hospital_id == HospitalsModel.id
         )
     )
     
@@ -86,7 +94,7 @@ async def get_doctors(
 )
 async def add_doctor(
     session: Session, 
-    new_doctor: Doctor,
+    new_doctor: DoctorInput,
     current_user: UsersModel = Depends(requires_role([UserRole.ADMIN]))
 ):
     await session.execute(

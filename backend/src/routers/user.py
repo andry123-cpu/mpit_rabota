@@ -31,6 +31,7 @@ async def get_access_token(
     if not user:
         raise HTTPException(status_code=404)
     
+    print(data.password, user.password)
     if not verify_password(data.password, user.password):
         raise HTTPException(status_code=401)
     
