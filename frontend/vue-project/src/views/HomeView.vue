@@ -4,6 +4,31 @@ import { ref, computed, onMounted, watch } from 'vue'
 const isHighContrast = ref(false)
 const fontSizeScale = ref(1.0) 
 
+
+const sendToDatabase = async (data) => {
+  try {
+    const response = await fetch('https://your-api-endpoint.com/api/triage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      },
+      body: JSON.stringify(data)
+    })
+    
+    if (!response.ok) {
+      throw new Error('Ошибка сервера: ' + response.status)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Ошибка при отправке данных:', error)
+    throw error
+  }
+}
+
+
+
 // Загружаем настройки из localStorage
 onMounted(() => {
   const savedContrast = localStorage.getItem('highContrastMode')
@@ -284,7 +309,6 @@ const services = ref([
   { title: 'Анализы лаборатория ПЦР биохимия', description: 'Биохимия, гормоны, ПЦР. Результаты — в личном кабинете.', price: 'по прайсу', visible: true },
   { title: 'Кардиолог ЭКГ эхокардиография', description: 'Оценка рисков, подбор терапии, ЭКГ на месте.', price: 'от 2 400 ₽', visible: true }
 ])
-
 const filteredServices = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
   if (!query) {
