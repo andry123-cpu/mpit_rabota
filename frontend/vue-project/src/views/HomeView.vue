@@ -1,11 +1,33 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 
-// ========================
-// УПРАВЛЕНИЕ ТЕМАМИ
-// ========================
 const isHighContrast = ref(false)
-const fontSizeScale = ref(1.0) // 1.0 = нормальный, 1.5 = увеличенный
+const fontSizeScale = ref(1.0) 
+
+
+const sendToDatabase = async (data) => {
+  try {
+    const response = await fetch('https://your-api-endpoint.com/api/triage', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+      },
+      body: JSON.stringify(data)
+    })
+    
+    if (!response.ok) {
+      throw new Error('Ошибка сервера: ' + response.status)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Ошибка при отправке данных:', error)
+    throw error
+  }
+}
+
+
 
 // Загружаем настройки из localStorage
 onMounted(() => {
@@ -20,11 +42,11 @@ onMounted(() => {
     fontSizeScale.value = parseFloat(savedFontSize)
   }
   
-  // Применяем настройки
+
   applyAccessibilitySettings()
 })
 
-// Применяем настройки доступности
+
 const applyAccessibilitySettings = () => {
   document.body.style.fontSize = `${16 * fontSizeScale.value}px`
   
@@ -35,7 +57,7 @@ const applyAccessibilitySettings = () => {
   }
 }
 
-// Сохраняем настройки при изменении
+
 watch(isHighContrast, (newValue) => {
   localStorage.setItem('highContrastMode', JSON.stringify(newValue))
   applyAccessibilitySettings()
@@ -46,7 +68,7 @@ watch(fontSizeScale, (newValue) => {
   applyAccessibilitySettings()
 })
 
-// Переключение контрастного режима
+
 const toggleHighContrast = () => {
   isHighContrast.value = !isHighContrast.value
 }
@@ -66,28 +88,29 @@ const resetAccessibility = () => {
   fontSizeScale.value = 1.0
 }
 
-// Горячие клавиши
+// hot keys
 onMounted(() => {
   document.addEventListener('keydown', (e) => {
-    // Ctrl + + для увеличения шрифта
+
+    // шрифт +
     if (e.ctrlKey && e.key === '+') {
       e.preventDefault()
       increaseFontSize()
     }
     
-    // Ctrl + - для уменьшения шрифта
+    // шрифт - 
     if (e.ctrlKey && e.key === '-') {
       e.preventDefault()
       decreaseFontSize()
     }
     
-    // Ctrl + 0 для сброса
+    // сброс
     if (e.ctrlKey && e.key === '0') {
       e.preventDefault()
       resetAccessibility()
     }
     
-    // Ctrl + C для переключения контраста
+    // контраст
     if (e.ctrlKey && e.key.toLowerCase() === 'c') {
       e.preventDefault()
       toggleHighContrast()
@@ -95,9 +118,6 @@ onMounted(() => {
   })
 })
 
-// ========================
-// ОСТАЛЬНОЙ КОД (анализ пациентов, поиск и т.д.)
-// ========================
 
 const patientData = ref({
   age: null,
@@ -289,7 +309,6 @@ const services = ref([
   { title: 'Анализы лаборатория ПЦР биохимия', description: 'Биохимия, гормоны, ПЦР. Результаты — в личном кабинете.', price: 'по прайсу', visible: true },
   { title: 'Кардиолог ЭКГ эхокардиография', description: 'Оценка рисков, подбор терапии, ЭКГ на месте.', price: 'от 2 400 ₽', visible: true }
 ])
-
 const filteredServices = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
   if (!query) {
@@ -476,7 +495,7 @@ const submitBookingForm = async () => {
         г. <b>Астрахань</b>, ул. Примерная, 10 • Ежедневно 8:00–21:00<br>
         <div class="contact-row">
           <span>Тел.: <a class="phone" href="tel:+79991234567">+7 999 123-45-67</a></span>
-          <router-link to="/dashboard" class="admin-link" aria-label="Панель врача для медицинского персонала">
+          <router-link to="/dashboard/login" class="admin-link" aria-label="Панель врача для медицинского персонала">
             <span class="admin-text">Панель врача</span>
             <span class="admin-icon">👨‍⚕️</span>
           </router-link>

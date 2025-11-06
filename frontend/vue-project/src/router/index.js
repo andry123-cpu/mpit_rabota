@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
@@ -10,7 +9,13 @@ const routes = [
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('../views/DashboardView.vue')
+    component: () => import('../views/DashboardView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/dashboard/login',
+    name: 'Login',
+    component: () => import('../views/LoginView.vue')
   }
 ]
 
@@ -19,8 +24,20 @@ const router = createRouter({
   routes
 })
 
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('token')
+  
+  // Если маршрут требует аутентификации и токена нет
+  if (to.meta.requiresAuth && !token) {
+    next({ name: 'Login' }) // перенаправляем на страницу логина
+  } 
+  // Если пользователь пытается зайти на страницу логина, но уже авторизован
+  else if (to.name === 'Login' && token) {
+    next({ name: 'Dashboard' }) // перенаправляем на дашборд
+  } 
+  else {
+    next() // разрешаем навигацию
+  }
+})
+
 export default router
-
-
-
-
